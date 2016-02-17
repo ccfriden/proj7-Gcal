@@ -8,9 +8,9 @@
 # Configuration options
 #
 # On most platforms: 
-#PYVENV = pyvenv-3.4
+#PYVENV = pyvenv-3.5
 # On ix (with bug in ubuntu)
-PYVENV = pyvenv-3.4 --without-pip
+PYVENV = pyvenv-3.5 --without-pip
 
 
 #
@@ -35,7 +35,7 @@ all:
 ##     to work around an ubuntu bug in pyvenv on ix
 ##     
 install:
-	# pyvenv-3.4 env ### BUGGY on ix
+	# pyvenv-3.5 env ### BUGGY on ix
 	$(PYVENV)  env
 	make env/bin/pip
 	(.  env/bin/activate; pip install -r requirements.txt)
