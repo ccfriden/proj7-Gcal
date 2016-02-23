@@ -86,13 +86,19 @@
 
   <h4>Start time</h4>
   <div class="input-group bootstrap-timepicker timepicker">
-      <input id="timepicker1" type="text" class="form-control input-small">
+      <input id="timepicker1" name="begin_time" type="text" class="form-control input-small"
+      {% if session.daterange is defined %}
+         value="{{session.begin_time}}"
+      {% endif %}>
       <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
   </div>
 
   <h4>End time</h4>
   <div class="input-group bootstrap-timepicker timepicker">
-      <input id="timepicker2" type="text" class="form-control input-small">
+      <input id="timepicker2" name="end_time" type="text" class="form-control input-small"
+      {% if session.daterange is defined %}
+         value="{{session.end_time}}"
+      {% endif %}>
       <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
   </div>
 
@@ -115,7 +121,7 @@
   <h4>Calenders</h4>
   {% for cal in session.calendars if cal.selected %}
           <div class="row">
-          <input type="checkbox" name="{{cal.summary}}" value="{{cal.id}}" checked>
+          <input type="checkbox" name="{{cal.summary}}" value="{{cal}}" checked>
 	   {{ cal.summary }}
           </div>
          {% if loop.index is divisibleby 3 %}
@@ -123,6 +129,11 @@
          {% endif %}
   {% endfor %}
   </div>
+  <script type="text/javascript">
+  $("input:checkbox[name=type]:checked").each(function(){
+    yourArray.push($(this).val());
+  });
+  </script>
 {% endif %}
 </form>
 

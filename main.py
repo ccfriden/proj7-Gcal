@@ -11,6 +11,8 @@ import logging
 import arrow # Replacement for datetime, based on moment.js
 import datetime # But we still need time
 from dateutil import tz  # For interpreting local times
+import datetime
+import pytz
 
 
 # OAuth2  - Google library implementation for convenience
@@ -72,15 +74,18 @@ def choose():
 
     gcal_service = get_gcal_service(credentials)
     app.logger.debug("Returned from get_gcal_service")
-    calendarIDs = []
+    startString = str(flask.session["begin_date"] + " " + flask.session["begin_time"])
+    endString = str(flask.session["end_date"] + " " + flask.session["end_time"])
+    print("pre-DATE: " + startString)
+    startTime = datetime.datetime.strptime(startString, "%m/%d/%Y %H:%M %p")
+    endTime = datetime.datetime.strptime(endString, "%m/%d/%Y %H:%M %p")
+    startTime = pytz.UTC.localize(startTime.isoformat('T'))
+    print("iso-DATE: " + str(startTime))
+    endTime =endTime.isoformat('T')
     for cal in list_calendars(gcal_service):
-        for calID in request.form:
-            if cal["id"] == calID:
-                app.logger.debug("here")
-                calendarIDs.append(calID)
-    for calID in calendarIDs:
-        calendar = gcal_service.calendarList().get(calendarId=calID).execute()
-        app.logger.debug(calendar["summary"])
+        events = gcal_service.events().list(calendarId=cal["id"], timeMin=startTime).execute()
+        for event in events['items']:
+            print(event['summary'])
     return render_template('index.html')
 
 ###
@@ -206,13 +211,14 @@ def setrange():
     widget.
     """
     app.logger.debug("Entering setrange")  
-    flask.flash("Setrange gave us '{}'".format(
-      request.form.get('daterange')))
+    flask.flash("Setrange gave us '{}'".format(request.form.get('daterange')) + ", " + request.form.get('begin_time') + " - " + request.form.get('end_time'))
     daterange = request.form.get('daterange')
     flask.session['daterange'] = daterange
     daterange_parts = daterange.split()
-    flask.session['begin_date'] = interpret_date(daterange_parts[0])
-    flask.session['end_date'] = interpret_date(daterange_parts[2])
+    flask.session['begin_date'] = daterange_parts[0]
+    flask.session['end_date'] = daterange_parts[2]
+    flask.session['begin_time'] = request.form.get('begin_time')
+    flask.session['end_time'] = request.form.get('end_time')
     app.logger.debug("Setrange parsed {} - {}  dates as {} - {}".format(
       daterange_parts[0], daterange_parts[1], 
       flask.session['begin_date'], flask.session['end_date']))
