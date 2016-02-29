@@ -74,18 +74,20 @@ def choose():
 
     gcal_service = get_gcal_service(credentials)
     app.logger.debug("Returned from get_gcal_service")
-    startString = str(flask.session["begin_date"] + " " + flask.session["begin_time"])
-    endString = str(flask.session["end_date"] + " " + flask.session["end_time"])
-    print("pre-DATE: " + startString)
-    startTime = datetime.datetime.strptime(startString, "%m/%d/%Y %H:%M %p")
-    endTime = datetime.datetime.strptime(endString, "%m/%d/%Y %H:%M %p")
-    startTime = pytz.UTC.localize(startTime.isoformat('T'))
-    print("iso-DATE: " + str(startTime))
-    endTime =endTime.isoformat('T')
+
     for cal in list_calendars(gcal_service):
-        events = gcal_service.events().list(calendarId=cal["id"], timeMin=startTime).execute()
+        events = gcal_service.events().list(calendarId=cal["id"]).execute()
+        print("Events in calendar: ")
         for event in events['items']:
-            print(event['summary'])
+            print(event["summary"])
+            if ("transparency" in event) and event["transparency"] == "transparent":
+                continue
+            if "dateTime" in event["start"]:
+                print("  --->   Checking event: " + event["summary"])
+                eventStart = arrow.get(event["start"]["dateTime"])
+                eventEnd = arrow.get(event["end"]["dateTime"])
+                if eventStart.time() >= arrow.get(flask.session["begin_time"], "h:mm A").time() and eventEnd.time() <= arrow.get(flask.session["end_time"], "h:mm A").time():
+                    print("  --->     --->   In time range: " + event["summary"])
     return render_template('index.html')
 
 ###
